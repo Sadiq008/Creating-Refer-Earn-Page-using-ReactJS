@@ -7,6 +7,8 @@ function Modal({ closeModal, initialValues }) {
   const [refereeName, setRefereeName] = useState("");
   const [refereeEmail, setRefereeEmail] = useState("");
   const [courseName, setCourseName] = useState("");
+  const [submitted, setSubmitted] = useState(false); // Track if form has been submitted
+  const [referralData, setReferralData] = useState(null); // State to hold fetched referral data
 
   // useEffect to set initial values if provided
   useEffect(() => {
@@ -18,6 +20,16 @@ function Modal({ closeModal, initialValues }) {
       setCourseName(initialValues.courseName || "");
     }
   }, [initialValues]);
+
+  // Function to fetch referral data
+  const fetchReferralData = async () => {
+    try {
+      const response = await axios.get("http://localhost:3002/api/referrals");
+      setReferralData(response.data); // Assuming response.data is an array of referral objects
+    } catch (error) {
+      console.error("Error fetching referral data:", error.message);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +44,8 @@ function Modal({ closeModal, initialValues }) {
       });
 
       console.log("Referral data saved:", response.data);
+      setSubmitted(true); // Set submitted state to true after successful submission
+      fetchReferralData(); // Fetch referral data after submission
       closeModal();
     } catch (error) {
       console.error("Error saving referral:", error.message);
@@ -109,6 +123,25 @@ function Modal({ closeModal, initialValues }) {
             </button>
           </div>
         </form>
+
+        {submitted && referralData && (
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold">Referral Data</h3>
+            <ul>
+              {referralData.map((referral, index) => (
+                <li key={index}>
+                  <strong>Referrer Name:</strong> {referral.referrerName}
+                  <br />
+                  <strong>Referee Name:</strong> {referral.refereeName}
+                  <br />
+                  <strong>Course Name:</strong> {referral.courseName}
+                  <br />
+                  {/* Add more fields as needed */}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
